@@ -1,0 +1,40 @@
+# $FreeBSD: release/9.0.0/share/skel/dot.cshrc 170119 2007-05-29 22:07:57Z dougb $
+#
+# .tcshrc - csh resource script, read at beginning of execution by each shell
+#
+# see also csh(1), environ(7).
+#
+
+alias h		history 25
+alias j		jobs -l
+alias la	ls -a
+alias lf	ls -FA
+alias ll	ls -lA
+alias ls	ls -CFG
+
+# A righteous umask
+umask 22
+
+set path = (/sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
+
+setenv	EDITOR	vim
+setenv	PAGER	less
+setenv	BLOCKSIZE	K
+setenv	LESS	"-M"
+
+if ($?prompt) then
+	# An interactive shell -- set some stuff up
+	set filec
+	set history = 1000
+	set savehist = 1000000
+	set histfile = /root/.history
+	set mail = (/var/mail/$USER)
+	if ( $?tcsh ) then
+		bindkey "^W" backward-delete-word
+		bindkey -k up history-search-backward
+		bindkey -k down history-search-forward
+	endif
+endif
+
+set autolist
+set prompt = '%m#> '
