@@ -1,0 +1,7 @@
+miscConfig
+==============
+
+Some configuration files for my FreeBSD system, that I plan
+on using on my Linux machines as well. Since I think I did
+a pretty good job, I will be updating tweaks here, so they
+won't get lost in a kernel panic or something :P
