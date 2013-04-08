@@ -13,6 +13,10 @@ alias ll	ls -lA
 alias ls	ls -CFG
 alias grep      grep --color
 
+# mpc shortcuts :P
+alias c		'mpc pause'
+alias x		'mpc play'
+
 # A righteous umask
 umask 22
 
