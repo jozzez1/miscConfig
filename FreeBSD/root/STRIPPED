@@ -17,7 +17,7 @@
 # in NOTES.
 #
 # $FreeBSD: release/9.1.0/sys/amd64/conf/GENERIC 238090 2012-07-04 00:54:16Z delphij $
-# JOZZE: customized from sable branch:   GENERIC 249549 2013-04-16
+# JOZZE: customized from stable branch:   GENERIC 249549 2013-04-16
 
 machine 	amd64
 
