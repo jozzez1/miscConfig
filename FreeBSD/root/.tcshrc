@@ -11,6 +11,8 @@ alias la	ls -a
 alias lf	ls -FA
 alias ll	ls -lA
 alias ls	ls -CFG
+alias grep      grep --color=always
+alias portsup   "svn up /usr/ports ; portsdb -Fu ; portversion -lv '<'"
 
 # A righteous umask
 umask 22
@@ -38,3 +40,4 @@ endif
 
 set autolist
 set prompt = '%m#> '
+
