@@ -1,0 +1,30 @@
+diff --git a/sys/dev/sound/usb/uaudio.c b/sys/dev/sound/usb/uaudio.c
+index 63e9f43..d70048a 100644
+--- a/sys/dev/sound/usb/uaudio.c
++++ b/sys/dev/sound/usb/uaudio.c
+@@ -925,6 +925,12 @@ uaudio_attach(device_t dev)
+ 
+ 	if (sc->sc_play_chan.num_alt > 0) {
+ 		uint8_t x;
++
++		/* set default alternate setting for playback */
++		usbd_set_alt_interface_index(sc->sc_udev,
++		    sc->sc_play_chan.usb_alt[0].iface_index,
++		    sc->sc_play_chan.usb_alt[0].iface_alt_index);
++
+ 		for (x = 0; x != sc->sc_play_chan.num_alt; x++) {
+ 			device_printf(dev, "Play: %d Hz, %d ch, %s format, "
+ 			    "2x8ms buffer.\n",
+@@ -938,6 +944,12 @@ uaudio_attach(device_t dev)
+ 
+ 	if (sc->sc_rec_chan.num_alt > 0) {
+ 		uint8_t x;
++
++		/* set default alternate setting for recording */
++		usbd_set_alt_interface_index(sc->sc_udev,
++		    sc->sc_rec_chan.usb_alt[0].iface_index,
++		    sc->sc_rec_chan.usb_alt[0].iface_alt_index);
++
+ 		for (x = 0; x != sc->sc_rec_chan.num_alt; x++) {
+ 			device_printf(dev, "Record: %d Hz, %d ch, %s format, "
+ 			    "2x8ms buffer.\n",
