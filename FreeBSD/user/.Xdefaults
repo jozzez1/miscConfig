@@ -1,15 +1,15 @@
 XTerm*foreground:	gray
 XTerm*background:	black
-XTerm*font:		-*-terminus-medium-*-*-*-17-*-*-*-*-*-iso8859-2
+XTerm*font:		-*-terminus-medium-*-*-*-16-*-*-*-*-*-iso8859-2
 
 UXTerm*foreground:	gray
 UXTerm*background:	black
-UXTerm*font:		-*-terminus-medium-*-*-*-17-*-*-*-*-*-iso8859-2
+UXTerm*font:		-*-terminus-medium-*-*-*-16-*-*-*-*-*-iso8859-2
 
 !URxvt.transparent:	true
 URxvt.shading:		30
-URxvt.font:		-*-terminus-medium-*-*-*-17-*-*-*-*-*-iso8859-2
-!URxvt.font:		-*-courier-medium-r-*-*-17-*-*-*-*-*-iso8859-2
+URxvt.font:		-*-terminus-medium-*-*-*-16-*-*-*-*-*-iso8859-2
+!URxvt.font:		-*-courier-medium-r-*-*-16-*-*-*-*-*-iso8859-2
 URxvt.scrollBar:	false
 URxvt.cursorColor:	white
 URxvt.allow_bold:	true
@@ -52,40 +52,7 @@ URxvt.urlLauncher:	/usr/local/bin/opera
 
 !my color style
 !background transparency
-URxvt.background:	[68]#000000
-
-!black
-URxvt.color0:		gray19
-URxvt.color8:		gray12
-!red
-URxvt.color9:		firebrick
-URxvt.color1:		IndianRed
-!green
-URxvt.color2:		chartreuse2
-URxvt.color10:		chartreuse4
-!yellow
-URxvt.color3:		yellow1
-URxvt.color11:		gold2
-!blue
-URxvt.color4:		DodgerBlue2
-URxvt.color12:		DodgerBlue4
-!magenta
-URxvt.color5:		VioletRed3
-URxvt.color13:		VioletRed4
-!cyan
-URxvt.color6:		SteelBlue2
-URxvt.color14:		DeepSkyBlue4
-!white
-URxvt.color7:		PapayaWhip
-URxvt.color15:		BlanchedAlmond
-!custom
-URxvt.cursorColor:	LemonChiffon
-URxvt.cursorColor2:	peru
-
-URxvt.colorBD:		DarkGoldenrod1
-URxvt.colorUL:		khaki
-URxvt.foreground:	DarkOliveGreen3
-!URxvt.foreground:	BlueViolet
+URxvt.background:	[78]#000000
 
 !black
 URxvt.color0:		gray12
@@ -118,4 +85,8 @@ URxvt.cursorColor2:	PaleTurquoise4
 URxvt.colorBD:		DarkOliveGreen1
 URxvt.colorUL:		burlywood2
 URxvt.foreground:	LightCyan4
+
+!some iso standards ...
+URxvt.iso14755:		true
+URxvt.iso14755_52:	true
 

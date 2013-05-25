@@ -1,0 +1,31 @@
+music_directory		"/home/jozze/Muzik"
+playlist_directory	"/home/jozze/.mpd/playlists"
+db_file			"/home/jozze/.mpd/database"
+log_file		"/home/jozze/.mpd/log"
+pid_file		"/home/jozze/.mpd/pid"
+state_file		"/home/jozze/.mpd/state"
+
+user			"jozze"
+
+# system oss -- unset oss module from /etc/rc.conf
+audio_output {
+	type 		"oss"
+	name 		"MPD OSS"
+	device		"/dev/dsp2.2"
+}
+
+# doesn't work ... :S
+#audio_output {
+#	type 		"pulse"
+#	name 		"MPD PULSE"
+#}
+
+# in case of the special build oss: -- unset hda module from /boot/loader.conf
+#audio_output {
+#	type 		"oss"
+#	name 		"MPD OSS"
+#	device		"/dev/oss/oss_hdaudio0/pcm1"
+#}
+
+auto_update		"yes"
+auto_update_depth	"4"

@@ -13,6 +13,9 @@ alias ll	ls -lA
 alias ls	ls -CFG
 alias grep      grep --color
 
+alias tpd	transmission-daemon
+alias tpr	transmission-remote
+
 # mpc shortcuts :P
 alias c		'mpc pause'
 alias x		'mpc play'
@@ -75,3 +78,5 @@ set prompt = '%n$> '
 # 11. directory writable to others, without sticky bit#
 
 setenv LSCOLORS	Exfxcxdxbxegeaabagacad
+
+# some scientific stuff
