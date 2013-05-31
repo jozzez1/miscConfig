@@ -158,7 +158,8 @@ device		atkbdc		# AT keyboard controller
 device		atkbd		# AT keyboard
 device		psm		# PS/2 mouse
 
-#device		kbdmux		# keyboard multiplexer
+# I need it for single-user mode
+device		kbdmux		# keyboard multiplexer
 
 device		vga		# VGA video card driver
 options 	VESA		# Add support for VESA BIOS Extensions (VBE)
@@ -302,7 +303,7 @@ device		ehci		# EHCI PCI->USB interface (USB 2.0)
 device		xhci		# XHCI PCI->USB interface (USB 3.0)
 device		usb		# USB Bus (required)
 #device		udbp		# USB Double Bulk Pipe devices (needs netgraph)
-#device		uhid		# "Human Interface Devices"
+#device		uhid		# "Human Interface Devices" # Single-user mode ...
 device		ukbd		# Keyboard
 device		ulpt		# Printer
 device		umass		# Disks/Mass storage - Requires scbus and da
