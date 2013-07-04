@@ -1,1 +1,0 @@
-OPTIONS=boulder:0, color, menu_headings:bold, pickup_types:$"+!=/?, msg_window:combination, showexp
