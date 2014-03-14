@@ -1,0 +1,762 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	mathgl
+#	mathgl/Makefile
+#	mathgl/distinfo
+#	mathgl/pkg-descr
+#	mathgl/pkg-plist
+#
+echo c - mathgl
+mkdir -p mathgl > /dev/null 2>&1
+echo x - mathgl/Makefile
+sed 's/^X//' >mathgl/Makefile << 'bdbddfc35c0b97e70f1b6e15e0515835'
+X# $FreeBSD$
+X
+XPORTNAME=	mathgl
+XPORTVERSION=	2.2.2
+XCATEGORIES=	math science
+XMASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/${PORTNAME}%20${PORTVERSION}
+X
+XMAINTAINER=	jozze.zepl@gmail.com
+XCOMMENT=	Scientific graph plotting library
+X
+XLICENSE=	GPLv2 LGPL21
+XLICENSE_COMB=	dual
+X
+XUSES=		cmake
+XUSE_GCC?=	4.7+
+XUSE_LDCONFIG=	yes
+X
+X# List of build options 
+XOPTIONS_DEFINE=	DOUBLE SIMPLE MPI OPENGL LGPL GSL PYTHON LUA OCTAVE MGL2
+X
+XOPTIONS_RADIO=	THREADS QT
+XOPTIONS_RADIO_THREADS=	PTHREAD OPENMP
+XOPTIONS_RADIO_QT=	QT5 QT4
+X
+XOPTIONS_MULTI=	GRAPHICS
+XOPTIONS_MULTI_GRAPHICS=	ZLIB FLTK GLUT GIF HDF5 HDF4 PDF WX JPEG PNG
+X
+XOPTIONS_GROUP=	DOCS
+XOPTIONS_GROUP_DOCS=	PDF_DOC HTML_DOC INFO_DOC PRC JSON
+X
+XOPTIONS_SUB=	yes
+X
+X# Dependencies (WX amd QT* are amongst the conditionals below)
+XLUA_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20
+XPYTHON_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20 ${PYNUMPY}
+XPYTHON_RUN_DEPENDS=	${PYNUMPY}
+XOCTAVE_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20 \
+X			octave:${PORTSDIR}/math/octave
+XOCTAVE_RUN_DEPENDS=	octave:${PORTSDIR}/math/octave
+XGSL_LIB_DEPENDS=	libgslcblas.so:${PORTSDIR}/math/gsl \
+X			libgsl.so:${PORTSDIR}/math/gsl
+XOPENGL_LIB_DEPENDS=	libGL.so:${PORTSDIR}/graphics/libGL
+XFLTK_LIB_DEPENDS=	libfltk.so:${PORTSDIR}/x11-toolkits/fltk
+XMPI_LIB_DEPENDS=	libmpi.so:${PORTSDIR}/net/openmpi
+XGLUT_LIB_DEPENDS=	libglut.so:${PORTSDIR}/graphics/freeglut
+XGIF_LIB_DEPENDS=	libgif.so:${PORTSDIR}/graphics/giflib
+XPDF_LIB_DEPENDS=	libhpdf.so:${PORTSDIR}/print/libharu
+XJPEG_LIB_DEPENDS=	libjpeg.so:${PORTSDIR}/graphics/jpeg
+XPNG_LIB_DEPENDS=	libpng15.so:${PORTSDIR}/graphics/png
+XINFO_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
+XJSON_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
+XHTML_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
+XHDF4_LIB_DEPENDS=	libdf.so:${PORTSDIR}/science/hdf
+XHDF5_LIB_DEPENDS=	libhdf5.so:${PORTSDIR}/science/hdf5-18
+X
+X# Option descriptions
+XDOUBLE_DESC=	Use 'double' precision in MathGL library
+XSIMPLE_DESC=	Increase drawing speed but disable maglDataA class
+XMPI_DESC=	Enable MPI
+XOPENGL_DESC=	Enable OpenGL support
+XLGPL_DESC=	Enable only LGPL part of MathGL
+XGSL_DESC=	Enable support with GSL
+XPYTHON_DESC=	Enable Python language interface
+XLUA_DESC=	Enable Lua language interface
+XOCTAVE_DESC=	Enable Octave interface
+XMGL2_DESC=	Use names 'libmgl2-*' instead of 'libmgl-*'
+XPTHREAD_DESC=	Enable POSIX threads
+XOPENMP_DESC=	Enable OpenMP threads
+XGRAPHICS_DESC=	Image support
+XFLTK_DESC=	Enable fltk widget
+XGLUT_DESC=	GLUT support (demands OpenGL option)
+XQT_DESC=	Qt library support
+XQT5_DESC=	Qt 5 widget support
+XQT4_DESC=	Qt 4 widget support
+XHDF4_DESC=	HDF-4 format support
+XWX_DESC=	Enable wxWidget widget library
+XPNG_DESC=	PNG image format support (requires the ZLIB option)
+XPDF_DESC=	Enable .pdf format support (requires the PNG option)
+XDOCS_DESC=	Documentation
+XPDF_DOC_DESC=	Build English .pdf documentation (requires the PDF option)
+XHTML_DOC_DESC=	Enable HTML documentation (English and Russian)
+XINFO_DOC_DESC=	Enable INFO documentation
+XPRC_DESC=	Enable PDF samples for HTML docs (requires the PDF option)
+XJSON_DESC=	Enable JSON samples for HTML docs
+X
+XOPTIONS_DEFAULT=OPENMP DOUBLE OPENGL PDF ZLIB PNG
+X
+X.include <bsd.port.options.mk>
+X
+X.if ${PORT_OPTIONS:MDOUBLE}
+XCMAKE_ARGS+=	-Denable-double=on
+X.else
+XCMAKE_ARGS+=	-Denable-double=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MSIMPLE}
+XCMAKE_ARGS+=	-Denable-simple=on
+XBROKEN=		Does not compile with this option
+X.else
+XCMAKE_ARGS+=	-Denable-simple=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MMPI}
+XCMAKE_ARGS+=	-Denable-mpi=on \
+X		-DMPI_C_LIBRARIES:STRING="${LOCALBASE}/mpi/openmpi/lib" \
+X		-DMPI_CXX_LIBRARIES:STRING="${LOCALBASE}/mpi/openmpi/lib" \
+X		-DMPI_C_INCLUDE_PATH:STRING="${LOCALBASE}/mpi/openmpi/include" \
+X		-DMPI_CXX_INCLUDE_PATH:STRING="${LOCALBASE}/mpi/openmpi/include"
+XCXXFLAGS+=	-I${LOCALBASE}/mpi/openmpi/include
+XCFLAGS+=	-I${LOCALBASE}/mpi/openmpi/include
+X.else
+XCMAKE_ARGS+=	-Denable-mpi=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MOPENGL}
+XCMAKE_ARGS+=	-Denable-opengl=on
+X.else
+XCMAKE_ARGS+=	-Denable-opengl=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPDF_DOC}
+XCMAKE_ARGS+=	-Denable-doc-pdf-en=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-pdf-en=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MHTML_DOC}
+XCMAKE_ARGS+=	-Denable-doc-html=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-html=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MINFO_DOC}
+XCMAKE_ARGS+=	-Denable-doc-info=on
+XINFO=		mathgl_en
+X.else
+XCMAKE_ARGS+=	-Denable-doc-info=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MJSON}
+XCMAKE_ARGS+=	-Denable-doc-json=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-json=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPRC}
+XCMAKE_ARGS+=	-Denable-doc-prc=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-prc=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MLGPL}
+XCMAKE_ARGS+=	-Denable-lgpl=on
+XPLIST_SUB+=	NOLGPL="@comment "
+X.else
+XCMAKE_ARGS+=	-Denable-lgpl=off
+XPLIST_SUB+=	NOLGPL=""
+X.endif
+X
+X.if ${PORT_OPTIONS:MGSL}
+XCMAKE_ARGS+=	-Denable-gsl=on
+X.else
+XCMAKE_ARGS+=	-Denable-gsl=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPYTHON}
+XCMAKE_ARGS+=	-Denable-python=on
+XUSE_PYTHON=	yes
+XCFLAGS+=	-I${PYTHON_SITELIBDIR}/numpy/core/include
+XCXXFLAGS+=	-I${PYTHON_SITELIBDIR}/numpy/core/include
+X.else
+XCMAKE_ARGS+=	-Denable-python=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MLUA}
+XCMAKE_ARGS+=	-Denable-lua=on
+XUSE_LUA=	5.0-5.1
+XWANT_LUA_VER=	5.1
+X.else
+XCMAKE_ARGS+=	-Denable-lua=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MOCTAVE}
+XCMAKE_ARGS+=	-Denable-octave=on
+XBROKEN=		Fails to build with Octave-3.8.0 support
+X.else
+XCMAKE_ARGS+=	-Denable-octave=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MMGL2}
+XCMAKE_ARGS+=	-Denable-mgl2=on
+XPLIST_SUB+=	NOMGL2="@comment "
+X.else
+XCMAKE_ARGS+=	-Denable-mgl2=off
+XPLIST_SUB+=	NOMGL2=""
+X.endif
+X
+X.if ${PORT_OPTIONS:MZLIB}
+XCMAKE_ARGS+=	-Denable-zlib=on
+X.else
+XCMAKE_ARGS+=	-Denable-zlib=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MFLTK}
+XCMAKE_ARGS+=	-Denable-fltk=on
+X.else
+XCMAKE_ARGS+=	-Denable-fltk=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MGLUT}
+XCMAKE_ARGS+=	-Denable-glut=on
+X.else
+XCMAKE_ARGS+=	-Denable-glut=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MGIF}
+XCMAKE_ARGS+=	-Denable-gif=on
+X.else
+XCMAKE_ARGS+=	-Denable-gif=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MHDF5}
+XCMAKE_ARGS+=	-Denable-hdf5=on
+X.else
+XCMAKE_ARGS+=	-Denable-hdf5=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MHDF4}
+XCMAKE_ARGS+=	-Denable-hdf4=on \
+X		-DHDF4_INCLUDE_DIR:STRING="${LOCALBASE}/include"
+X.else
+XCMAKE_ARGS+=	-Denable-hdf4=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPDF}
+XCMAKE_ARGS+=	-Denable-pdf=on
+X.else
+XCMAKE_ARGS+=	-Denable-pdf=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MWX}
+XCMAKE_ARGS+=	-Denable-wx=on
+XUSE_WX=		2.5-2.8
+XWANT_WX_VER=	2.8
+XWX_CONF_ARGS=	absolute
+X.else
+XCMAKE_ARGS+=	-Denable-wx=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MLUA}
+XCMAKE_ARGS+=	-Denable-lua=on
+X.else
+XCMAKE_ARGS+=	-Denable-lua=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MJPEG}
+XCMAKE_ARGS+=	-Denable-jpeg=on
+X.else
+XCMAKE_ARGS+=	-Denable-jpeg=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPNG}
+XCMAKE_ARGS+=	-Denable-png=on
+XPLIST_SUB+=	NOPNG="@comment "
+X.else
+XCMAKE_ARGS+=	-Denable-png=off
+XPLIST_SUB+=	NOPNG=""
+X.endif
+X
+X.if ${PORT_OPTIONS:MQT5}
+XCMAKE_ARGS+=	-Denable-qt5=on
+XUSE_QT5=	core widgets gui network webkit \
+X		qmake_build
+X.else
+XCMAKE_ARGS+=	-Denable-qt5=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MQT4}
+XCMAKE_ARGS+=	-Denable-qt4=on
+XUSE_QT4=	webkit gui svg svg xml \
+X		moc_build qmake_build rcc_build uic_build
+X.else
+XCMAKE_ARGS+=	-Denable-qt4=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MOPENMP}
+XCMAKE_ARGS+=	-Denable-openmp=on
+X.else
+XCMAKE_ARGS+=	-Denable-openmp=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPTHREAD}
+XPTHREAD_CMAKE_ON=	-Denable-pthread=on
+X.else
+XPTHREAD_CMAKE_OFF=	-Denable-pthread=off
+X.endif
+X
+Xpost-patch:
+X.if ${PORT_OPTIONS:MFLTK}
+X	@${REINPLACE_CMD} -e 's:<Fl:<FL:g' ${WRKSRC}/include/mgl2/fltk.h
+X.endif
+X.if ${PORT_OPTIONS:MINFO_DOC}
+X	@${REINPLACE_CMD} -e \
+X		's|@documentencoding UTF-8|@documentencoding ISO-8859-1|g' ${WRKSRC}/texinfo/mathgl_en.texi
+X	@${REINPLACE_CMD} -e \
+X		's|@documentencoding UTF-8|@documentencoding KOI8-R|g' ${WRKSRC}/texinfo/mathgl_ru.texi
+X	@${REINPLACE_CMD} -e \
+X		"s|@item @quoteright{}|@item '|g" ${WRKSRC}/texinfo/symbols_en.texi
+X	@${REINPLACE_CMD} -e \
+X		"s|@item @quoteright{}|@item '|g" ${WRKSRC}/texinfo/symbols_ru.texi
+X.endif
+X.if ${PORT_OPTIONS:MHDF4}
+X	@${REINPLACE_CMD} -e 's:<hdf/:<:g' ${WRKSRC}/src/data_io.cpp
+X.endif
+X
+Xpost-install:
+X.if ${PORT_OPTIONS:MINFO_DOC}
+X.for file in mgl.cgi.1 mglconv.1 mglview.1 udav.1
+X	${INSTALL_MAN} ${WRKSRC}/texinfo/${file} ${STAGEDIR}${PREFIX}/man/man1/
+X.endfor
+X	${INSTALL_MAN} ${WRKSRC}/texinfo/mgl.5 ${STAGEDIR}${PREFIX}/man/man5/
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info ${STAGEDIR}${PREFIX}/info
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-1 ${STAGEDIR}${PREFIX}/info
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-2 ${STAGEDIR}${PREFIX}/info
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-3 ${STAGEDIR}${PREFIX}/info
+X.endif
+X
+X.include <bsd.port.mk>
+bdbddfc35c0b97e70f1b6e15e0515835
+echo x - mathgl/distinfo
+sed 's/^X//' >mathgl/distinfo << '7ce0342a8013760d4dbd6a5a534f6be7'
+XSHA256 (mathgl-2.2.2.tar.gz) = d6cbf522c029df89a30809152e08c9a29f204fc55eceb14924002dbb3a53f5cb
+XSIZE (mathgl-2.2.2.tar.gz) = 5343271
+7ce0342a8013760d4dbd6a5a534f6be7
+echo x - mathgl/pkg-descr
+sed 's/^X//' >mathgl/pkg-descr << '7e210536c8621b57825092d288e23a67'
+XMathGL is ...
+X* a library for making high-quality scientific graphs under Linux & Windows
+X* a library for the fast data plotting and data processing  of large data
+X  arrays
+X* a library for working in window and console modes and for easy embedding
+X  into other programs;
+X* a library with large and growing set of graphics
+X
+XNow MathGL supports more than 55 general types of graphics for 1d, 2d and 3d
+Xdata arrays, including special ones for chemical and statistical graphics.
+XSupports raster and vector (EPS, SVG) graphics. Supports several interfaces
+X(Qt, FLTK ...) and can even be used from console programs. It has  cript MGL
+Xlanguage for simplification of data plotting. Also it has several types of
+Xtransparency and smoothed lightning, vector fonts and TeX-like symbol parsing,
+Xarbitrary curvilinear coordinate system and many over useful things. It can be
+Xused from code written on C++/C,Fortran,Python and many other languages.
+XFinally it is platform independent and free (under GPL v.2.0 license). If you
+Xdon't like the idea of GPL v.2.0 you can only build the LGPL part of the
+Xlibrary (but you lose the SWIG interfaces, like for Python or Octave).
+X
+XWWW: http://mathgl.sourceforge.net/doc_en/Main.html
+7e210536c8621b57825092d288e23a67
+echo x - mathgl/pkg-plist
+sed 's/^X//' >mathgl/pkg-plist << '75dfa71f3c885625cf7749a0a5d45634'
+X%%NOLGPL%%bin/mglconv
+X%%NOLGPL%%%%QT5%%bin/mglview
+X%%NOLGPL%%%%QT5%%bin/udav
+X%%NOLGPL%%%%QT4%%bin/mglview
+X%%NOLGPL%%%%QT4%%bin/udav
+Xinclude/mgl2/abstract.h
+Xinclude/mgl2/addon.h
+Xinclude/mgl2/base.h
+Xinclude/mgl2/base_cf.h
+Xinclude/mgl2/canvas.h
+Xinclude/mgl2/canvas_cf.h
+Xinclude/mgl2/canvas_wnd.h
+Xinclude/mgl2/config.h
+Xinclude/mgl2/cont.h
+Xinclude/mgl2/data.h
+Xinclude/mgl2/data_cf.h
+Xinclude/mgl2/datac.h
+Xinclude/mgl2/datac_cf.h
+Xinclude/mgl2/define.h
+Xinclude/mgl2/dllexport.h
+Xinclude/mgl2/eval.h
+Xinclude/mgl2/evalc.h
+Xinclude/mgl2/fit.h
+X%%FLTK%%include/mgl2/fltk.h
+Xinclude/mgl2/font.h
+X%%GLUT%%include/mgl2/glut.h
+X%%GSL%%include/mgl2/gsl.fs
+Xinclude/mgl2/mathgl.fs
+Xinclude/mgl2/mgl.fs
+Xinclude/mgl2/mgl.h
+Xinclude/mgl2/mgl_cf.h
+Xinclude/mgl2/mgl_pas.pas
+Xinclude/mgl2/mglplot.fs
+X%%MPI%%include/mgl2/mpi.h
+X%%OPENGL%%include/mgl2/opengl.h
+Xinclude/mgl2/other.h
+Xinclude/mgl2/parser.h
+Xinclude/mgl2/pde.h
+Xinclude/mgl2/plot.h
+Xinclude/mgl2/prim.h
+Xinclude/mgl2/surf.h
+X%%QT5%%include/mgl2/qmathgl.h
+X%%QT5%%include/mgl2/qt.h
+X%%QT4%%include/mgl2/qmathgl.h
+X%%QT4%%include/mgl2/qt.h
+Xinclude/mgl2/thread.h
+Xinclude/mgl2/type.h
+Xinclude/mgl2/vect.h
+Xinclude/mgl2/vectors.fs
+Xinclude/mgl2/volume.h
+X%%QT5%%include/mgl2/window.h
+X%%QT4%%include/mgl2/window.h
+Xinclude/mgl2/wnd.h
+X%%WX%%include/mgl2/wx.h
+X%%NOMGL2%%%%FLTK%%lib/libmgl-fltk.a
+X%%NOMGL2%%%%FLTK%%lib/libmgl-fltk.so
+X%%NOMGL2%%%%FLTK%%lib/libmgl-fltk.so.7.2.0
+X%%NOMGL2%%%%GLUT%%lib/libmgl-glut.a
+X%%NOMGL2%%%%GLUT%%lib/libmgl-glut.so
+X%%NOMGL2%%%%GLUT%%lib/libmgl-glut.so.7.2.0
+X%%NOMGL2%%%%MPI%%lib/libmgl-mpi.a
+X%%NOMGL2%%%%MPI%%lib/libmgl-mpi.so
+X%%NOMGL2%%%%MPI%%lib/libmgl-mpi.so.7.2.0
+X%%NOMGL2%%%%QT5%%lib/libmgl-qt.a
+X%%NOMGL2%%%%QT5%%lib/libmgl-qt.so
+X%%NOMGL2%%%%QT5%%lib/libmgl-qt.so.7.2.0
+X%%NOMGL2%%%%QT5%%lib/libmgl-qt5.a
+X%%NOMGL2%%%%QT5%%lib/libmgl-qt5.so
+X%%NOMGL2%%%%QT5%%lib/libmgl-qt5.so.7.2.0
+X%%NOMGL2%%%%QT5%%lib/libmgl-wnd.a
+X%%NOMGL2%%%%QT5%%lib/libmgl-wnd.so
+X%%NOMGL2%%%%QT5%%lib/libmgl-wnd.so.7.2.0
+X%%NOMGL2%%%%QT4%%lib/libmgl-qt.a
+X%%NOMGL2%%%%QT4%%lib/libmgl-qt.so
+X%%NOMGL2%%%%QT4%%lib/libmgl-qt.so.7.2.0
+X%%NOMGL2%%%%QT4%%lib/libmgl-qt4.a
+X%%NOMGL2%%%%QT4%%lib/libmgl-qt4.so
+X%%NOMGL2%%%%QT4%%lib/libmgl-qt4.so.7.2.0
+X%%NOMGL2%%%%QT4%%lib/libmgl-wnd.a
+X%%NOMGL2%%%%QT4%%lib/libmgl-wnd.so
+X%%NOMGL2%%%%QT4%%lib/libmgl-wnd.so.7.2.0
+X%%NOMGL2%%%%WX%%lib/libmgl-wx.a
+X%%NOMGL2%%%%WX%%lib/libmgl-wx.so
+X%%NOMGL2%%%%WX%%lib/libmgl-wx.so.7.2.0
+X%%NOMGL2%%lib/libmgl.a
+X%%NOMGL2%%lib/libmgl.so
+X%%NOMGL2%%lib/libmgl.so.7.2.0
+X%%MGL2%%%%FLTK%%lib/libmgl2-fltk.a
+X%%MGL2%%%%FLTK%%lib/libmgl2-fltk.so
+X%%MGL2%%%%FLTK%%lib/libmgl2-fltk.so.7.2.0
+X%%MGL2%%%%GLUT%%lib/libmgl2-glut.a
+X%%MGL2%%%%GLUT%%lib/libmgl2-glut.so
+X%%MGL2%%%%GLUT%%lib/libmgl2-glut.so.7.2.0
+X%%MGL2%%%%MPI%%lib/libmgl2-mpi.a
+X%%MGL2%%%%MPI%%lib/libmgl2-mpi.so
+X%%MGL2%%%%MPI%%lib/libmgl2-mpi.so.7.2.0
+X%%MGL2%%%%QT5%%lib/libmgl2-qt.a
+X%%MGL2%%%%QT5%%lib/libmgl2-qt.so
+X%%MGL2%%%%QT5%%lib/libmgl2-qt.so.7.2.0
+X%%MGL2%%%%QT5%%lib/libmgl2-qt5.a
+X%%MGL2%%%%QT5%%lib/libmgl2-qt5.so
+X%%MGL2%%%%QT5%%lib/libmgl2-qt5.so.7.2.0
+X%%MGL2%%%%QT5%%lib/libmgl2-wnd.a
+X%%MGL2%%%%QT5%%lib/libmgl2-wnd.so
+X%%MGL2%%%%QT5%%lib/libmgl2-wnd.so.7.2.0
+X%%MGL2%%%%QT4%%lib/libmgl2-qt.a
+X%%MGL2%%%%QT4%%lib/libmgl2-qt.so
+X%%MGL2%%%%QT4%%lib/libmgl2-qt.so.7.2.0
+X%%MGL2%%%%QT4%%lib/libmgl2-qt4.a
+X%%MGL2%%%%QT4%%lib/libmgl2-qt4.so
+X%%MGL2%%%%QT4%%lib/libmgl2-qt4.so.7.2.0
+X%%MGL2%%%%QT4%%lib/libmgl2-wnd.a
+X%%MGL2%%%%QT4%%lib/libmgl2-wnd.so
+X%%MGL2%%%%QT4%%lib/libmgl2-wnd.so.7.2.0
+X%%MGL2%%%%WX%%lib/libmgl2-wx.a
+X%%MGL2%%%%WX%%lib/libmgl2-wx.so
+X%%MGL2%%%%WX%%lib/libmgl2-wx.so.7.2.0
+X%%MGL2%%lib/libmgl2.a
+X%%MGL2%%lib/libmgl2.so
+X%%MGL2%%lib/libmgl2.so.7.2.0
+X%%NOLGPL%%%%LUA%%lib/mgl-lua.so
+X%%NOLGPL%%%%PYTHON%%%%PYTHON_SITELIBDIR%%/_mathgl.so
+X%%NOLGPL%%%%PYTHON%%%%PYTHON_SITELIBDIR%%/mathgl.py
+X%%NOLGPL%%%%PYTHON%%%%PYTHON_SITELIBDIR%%/mathgl.pyc
+X%%INFO_DOC%%man/man1/mgl.cgi.1.gz
+X%%INFO_DOC%%man/man1/mglconv.1.gz
+X%%INFO_DOC%%man/man1/mglview.1.gz
+X%%INFO_DOC%%man/man1/udav.1.gz
+X%%INFO_DOC%%man/man5/mgl.5.gz
+X%%INFO_DOC%%@dirrmtry man/man1
+X%%INFO_DOC%%@dirrmtry man/man5
+X%%INFO_DOC%%@dirrmtry man
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/classes.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/datadvance.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/fltk.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/mathgl_en.html
+X%%PDF_DOC%%%%PORTDOCS%%%%DOCSDIR%%/mathgl_en.pdf
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/mathgl_ru.html
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/mgl_en.html
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/mgl_ru.html
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/alpha.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/area.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/aspect.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/axial.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/axis.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/barh.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/bars.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/belt.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/box.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/boxplot.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/boxs.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/candle.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/chart.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cloud.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/colorbar.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/combined.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cones.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cont.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cont_xyz.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/conta.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contd.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contf.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contf_xyz.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contfa.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contv.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/correl.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/curvcoor.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cut.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dat_diff.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dat_extra.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dens.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dens_xyz.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/densa.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dew.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dots.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/error.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/error2.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fall.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fit.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/flow.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fog.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fonts.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/grad.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/hist.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/inplot.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/label.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/legend.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/light.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/loglog.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/map.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mark.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mask.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mesh.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mirror.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/molecule.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/ohlc.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/parser.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/pde.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/pipe.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/plot.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/primitives.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/projection.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/projection5.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/qo2d.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/radar.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/refill.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/region.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/schemes.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/several_light.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/solve.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/stem.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/step.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/stereo.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/stfa.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/style.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf3.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf3a.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf3c.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surfa.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surfc.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/table.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tape.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tens.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/ternary.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/text.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/textmark.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/ticks.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tile.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tiles.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/torus.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/traj.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/triangulation.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/triplot.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tube.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type0.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type1.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type2.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/vect.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/vecta.png
+X%%HTML_DOC%%%%PNG%%%%PORTDOCS%%%%DOCSDIR%%/png/venn.png
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/alpha.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/area.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/aspect.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/axial.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/axis.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/barh.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/bars.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/belt.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/box.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/boxplot.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/boxs.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/candle.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/chart.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cloud.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/colorbar.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/combined.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cones.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cont.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cont_xyz.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/conta.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contd.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contf.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contf_xyz.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contfa.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/contv.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/correl.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/curvcoor.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/cut.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dat_diff.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dat_extra.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dens.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dens_xyz.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/densa.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dew.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/dots.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/error.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/error2.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fall.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fit.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/flow.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fog.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/fonts.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/grad.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/hist.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/inplot.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/label.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/legend.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/light.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/loglog.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/map.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mark.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mask.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mesh.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/mirror.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/molecule.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/ohlc.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/parser.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/pde.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/pipe.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/plot.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/primitives.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/projection.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/projection5.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/qo2d.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/radar.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/refill.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/region.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/schemes.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/several_light.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/solve.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/stem.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/step.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/stereo.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/stfa.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/style.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf3.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf3a.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surf3c.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surfa.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/surfc.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/table.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tape.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tens.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/ternary.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/text.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/textmark.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/ticks.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tile.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tiles.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/torus.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/traj.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/triangulation.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/triplot.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/tube.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type0.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type1.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type2.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/vect.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/vecta.bmp
+X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/venn.bmp
+X%%PORTDOCS%%%%DOCSDIR%%/qt.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_arg.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_calc.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_cmd.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_data.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_gen_set.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_help.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_light.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_main.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_opt.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_pen.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_prop.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_sch.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_txt.png
+X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_var.png
+X%%DATADIR%%/fonts/STIX.vfm
+X%%DATADIR%%/fonts/STIX_b.vfm
+X%%DATADIR%%/fonts/STIX_bi.vfm
+X%%DATADIR%%/fonts/STIX_i.vfm
+X%%NOLGPL%%%%DATADIR%%/mgl.cgi
+X%%NOLGPL%%%%QT5%%share/applications/udav.desktop
+X%%NOLGPL%%%%QT5%%share/pixmaps/udav.png
+X%%NOLGPL%%%%QT5%%share/udav/udav_ru.qm
+X%%NOLGPL%%%%QT5%%@dirrmtry share/udav
+X%%NOLGPL%%%%QT5%%@dirrmtry share/applications
+X%%NOLGPL%%%%QT4%%share/applications/udav.desktop
+X%%NOLGPL%%%%QT4%%share/pixmaps/udav.png
+X%%NOLGPL%%%%QT4%%share/udav/udav_ru.qm
+X%%NOLGPL%%%%QT4%%@dirrmtry share/udav
+X%%NOLGPL%%%%QT4%%@dirrmtry share/applications
+X@dirrmtry %%DATADIR%%/fonts
+X@dirrmtry %%DATADIR%%
+X@dirrmtry include/mgl2
+X@dirrmtry lib
+X@dirrmtry bin
+X%%HTML_DOC%%%%PORTDOCS%%@dirrmtry %%DOCSDIR%%/udav
+X%%HTML_DOC%%%%PORTDOCS%%@dirrmtry %%DOCSDIR%%/png
+X%%PORTDOCS%%@dirrm %%DOCSDIR%%
+X%%NOLGPL%%%%PYTHON%%@dirrmtry %%PYTHON_SITELIBDIR%%
+X%%NOLGPL%%%%PYTHON%%@dirrmtry %%PYTHON_LIBDIR%%
+75dfa71f3c885625cf7749a0a5d45634
+exit
+
