@@ -443,7 +443,6 @@ XLICENSE=	GPLv2 LGPL21
 XLICENSE_COMB=	dual
 X
 XUSES=		cmake
-X#USE_GCC?=	4.7+
 XUSE_LDCONFIG=	yes
 X
 X# List of build options 
@@ -496,7 +495,7 @@ XLUA_DESC=	Enable Lua language interface
 XOCTAVE_DESC=	Enable Octave interface
 XMGL2_DESC=	Use names 'libmgl2-*' instead of 'libmgl-*'
 XPTHREAD_DESC=	Enable POSIX threads
-XOPENMP_DESC=	Enable OpenMP threads
+XOPENMP_DESC=	Enable OpenMP threads (requires GCC 4.7)
 XGRAPHICS_DESC=	Image support
 XFLTK_DESC=	Enable fltk widget
 XGLUT_DESC=	GLUT support (demands OpenGL option)
@@ -514,7 +513,7 @@ XINFO_DOC_DESC=	Enable INFO documentation
 XPRC_DESC=	Enable PDF samples for HTML docs (requires the PDF option)
 XJSON_DESC=	Enable JSON samples for HTML docs
 X
-XOPTIONS_DEFAULT=OPENMP DOUBLE OPENGL PDF ZLIB PNG
+XOPTIONS_DEFAULT=PTHREAD DOUBLE OPENGL PDF ZLIB PNG
 X
 X.include <bsd.port.options.mk>
 X
@@ -589,9 +588,9 @@ XPLIST_SUB+=	NOLGPL=""
 X.endif
 X
 X.if ${PORT_OPTIONS:MGSL}
-XCMAKE_ARGS+=	-Denable-gsl=on \
-X		-I${LOCALBASE}/include \
-X		-L${LOCALBASE}/lib
+XCMAKE_ARGS+=	-Denable-gsl=on
+XCXXFLAGS+=	-I${LOCALBASE}/include
+XCFLAGS+=	-I${LOCALBASE}/include
 X.else
 XCMAKE_ARGS+=	-Denable-gsl=off
 X.endif
@@ -718,6 +717,7 @@ X.endif
 X
 X.if ${PORT_OPTIONS:MOPENMP}
 XCMAKE_ARGS+=	-Denable-openmp=on
+XUSE_GCC=	4.7+
 X.else
 XCMAKE_ARGS+=	-Denable-openmp=off
 X.endif
@@ -726,11 +726,6 @@ X.if ${PORT_OPTIONS:MPTHREAD}
 XPTHREAD_CMAKE_ON=	-Denable-pthread=on
 X.else
 XPTHREAD_CMAKE_OFF=	-Denable-pthread=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MGSL} || \
-X	${PORT_OPTIONS:MOPENMP}
-XUSE_GCC=	4.7+
 X.endif
 X
 Xpost-patch:
