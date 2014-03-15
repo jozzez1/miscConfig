@@ -6,373 +6,13 @@
 # This archive contains:
 #
 #	mathgl
-#	mathgl/Makefile
-#	mathgl/distinfo
-#	mathgl/pkg-descr
 #	mathgl/pkg-plist
+#	mathgl/pkg-descr
+#	mathgl/distinfo
+#	mathgl/Makefile
 #
 echo c - mathgl
 mkdir -p mathgl > /dev/null 2>&1
-echo x - mathgl/Makefile
-sed 's/^X//' >mathgl/Makefile << 'bdbddfc35c0b97e70f1b6e15e0515835'
-X# $FreeBSD$
-X
-XPORTNAME=	mathgl
-XPORTVERSION=	2.2.2
-XCATEGORIES=	math science
-XMASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/${PORTNAME}%20${PORTVERSION}
-X
-XMAINTAINER=	jozze.zepl@gmail.com
-XCOMMENT=	Scientific graph plotting library
-X
-XLICENSE=	GPLv2 LGPL21
-XLICENSE_COMB=	dual
-X
-XUSES=		cmake
-XUSE_GCC?=	4.7+
-XUSE_LDCONFIG=	yes
-X
-X# List of build options 
-XOPTIONS_DEFINE=	DOUBLE SIMPLE MPI OPENGL LGPL GSL PYTHON LUA OCTAVE MGL2
-X
-XOPTIONS_RADIO=	THREADS QT
-XOPTIONS_RADIO_THREADS=	PTHREAD OPENMP
-XOPTIONS_RADIO_QT=	QT5 QT4
-X
-XOPTIONS_MULTI=	GRAPHICS
-XOPTIONS_MULTI_GRAPHICS=	ZLIB FLTK GLUT GIF HDF5 HDF4 PDF WX JPEG PNG
-X
-XOPTIONS_GROUP=	DOCS
-XOPTIONS_GROUP_DOCS=	PDF_DOC HTML_DOC INFO_DOC PRC JSON
-X
-XOPTIONS_SUB=	yes
-X
-X# Dependencies (WX amd QT* are amongst the conditionals below)
-XLUA_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20
-XPYTHON_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20 ${PYNUMPY}
-XPYTHON_RUN_DEPENDS=	${PYNUMPY}
-XOCTAVE_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20 \
-X			octave:${PORTSDIR}/math/octave
-XOCTAVE_RUN_DEPENDS=	octave:${PORTSDIR}/math/octave
-XGSL_LIB_DEPENDS=	libgslcblas.so:${PORTSDIR}/math/gsl \
-X			libgsl.so:${PORTSDIR}/math/gsl
-XOPENGL_LIB_DEPENDS=	libGL.so:${PORTSDIR}/graphics/libGL
-XFLTK_LIB_DEPENDS=	libfltk.so:${PORTSDIR}/x11-toolkits/fltk
-XMPI_LIB_DEPENDS=	libmpi.so:${PORTSDIR}/net/openmpi
-XGLUT_LIB_DEPENDS=	libglut.so:${PORTSDIR}/graphics/freeglut
-XGIF_LIB_DEPENDS=	libgif.so:${PORTSDIR}/graphics/giflib
-XPDF_LIB_DEPENDS=	libhpdf.so:${PORTSDIR}/print/libharu
-XJPEG_LIB_DEPENDS=	libjpeg.so:${PORTSDIR}/graphics/jpeg
-XPNG_LIB_DEPENDS=	libpng15.so:${PORTSDIR}/graphics/png
-XINFO_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
-XJSON_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
-XHTML_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
-XHDF4_LIB_DEPENDS=	libdf.so:${PORTSDIR}/science/hdf
-XHDF5_LIB_DEPENDS=	libhdf5.so:${PORTSDIR}/science/hdf5-18
-X
-X# Option descriptions
-XDOUBLE_DESC=	Use 'double' precision in MathGL library
-XSIMPLE_DESC=	Increase drawing speed but disable maglDataA class
-XMPI_DESC=	Enable MPI
-XOPENGL_DESC=	Enable OpenGL support
-XLGPL_DESC=	Enable only LGPL part of MathGL
-XGSL_DESC=	Enable support with GSL
-XPYTHON_DESC=	Enable Python language interface
-XLUA_DESC=	Enable Lua language interface
-XOCTAVE_DESC=	Enable Octave interface
-XMGL2_DESC=	Use names 'libmgl2-*' instead of 'libmgl-*'
-XPTHREAD_DESC=	Enable POSIX threads
-XOPENMP_DESC=	Enable OpenMP threads
-XGRAPHICS_DESC=	Image support
-XFLTK_DESC=	Enable fltk widget
-XGLUT_DESC=	GLUT support (demands OpenGL option)
-XQT_DESC=	Qt library support
-XQT5_DESC=	Qt 5 widget support
-XQT4_DESC=	Qt 4 widget support
-XHDF4_DESC=	HDF-4 format support
-XWX_DESC=	Enable wxWidget widget library
-XPNG_DESC=	PNG image format support (requires the ZLIB option)
-XPDF_DESC=	Enable .pdf format support (requires the PNG option)
-XDOCS_DESC=	Documentation
-XPDF_DOC_DESC=	Build English .pdf documentation (requires the PDF option)
-XHTML_DOC_DESC=	Enable HTML documentation (English and Russian)
-XINFO_DOC_DESC=	Enable INFO documentation
-XPRC_DESC=	Enable PDF samples for HTML docs (requires the PDF option)
-XJSON_DESC=	Enable JSON samples for HTML docs
-X
-XOPTIONS_DEFAULT=OPENMP DOUBLE OPENGL PDF ZLIB PNG
-X
-X.include <bsd.port.options.mk>
-X
-X.if ${PORT_OPTIONS:MDOUBLE}
-XCMAKE_ARGS+=	-Denable-double=on
-X.else
-XCMAKE_ARGS+=	-Denable-double=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MSIMPLE}
-XCMAKE_ARGS+=	-Denable-simple=on
-XBROKEN=		Does not compile with this option
-X.else
-XCMAKE_ARGS+=	-Denable-simple=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MMPI}
-XCMAKE_ARGS+=	-Denable-mpi=on \
-X		-DMPI_C_LIBRARIES:STRING="${LOCALBASE}/mpi/openmpi/lib" \
-X		-DMPI_CXX_LIBRARIES:STRING="${LOCALBASE}/mpi/openmpi/lib" \
-X		-DMPI_C_INCLUDE_PATH:STRING="${LOCALBASE}/mpi/openmpi/include" \
-X		-DMPI_CXX_INCLUDE_PATH:STRING="${LOCALBASE}/mpi/openmpi/include"
-XCXXFLAGS+=	-I${LOCALBASE}/mpi/openmpi/include
-XCFLAGS+=	-I${LOCALBASE}/mpi/openmpi/include
-X.else
-XCMAKE_ARGS+=	-Denable-mpi=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MOPENGL}
-XCMAKE_ARGS+=	-Denable-opengl=on
-X.else
-XCMAKE_ARGS+=	-Denable-opengl=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MPDF_DOC}
-XCMAKE_ARGS+=	-Denable-doc-pdf-en=on
-X.else
-XCMAKE_ARGS+=	-Denable-doc-pdf-en=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MHTML_DOC}
-XCMAKE_ARGS+=	-Denable-doc-html=on
-X.else
-XCMAKE_ARGS+=	-Denable-doc-html=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MINFO_DOC}
-XCMAKE_ARGS+=	-Denable-doc-info=on
-XINFO=		mathgl_en
-X.else
-XCMAKE_ARGS+=	-Denable-doc-info=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MJSON}
-XCMAKE_ARGS+=	-Denable-doc-json=on
-X.else
-XCMAKE_ARGS+=	-Denable-doc-json=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MPRC}
-XCMAKE_ARGS+=	-Denable-doc-prc=on
-X.else
-XCMAKE_ARGS+=	-Denable-doc-prc=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MLGPL}
-XCMAKE_ARGS+=	-Denable-lgpl=on
-XPLIST_SUB+=	NOLGPL="@comment "
-X.else
-XCMAKE_ARGS+=	-Denable-lgpl=off
-XPLIST_SUB+=	NOLGPL=""
-X.endif
-X
-X.if ${PORT_OPTIONS:MGSL}
-XCMAKE_ARGS+=	-Denable-gsl=on
-X.else
-XCMAKE_ARGS+=	-Denable-gsl=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MPYTHON}
-XCMAKE_ARGS+=	-Denable-python=on
-XUSE_PYTHON=	yes
-XCFLAGS+=	-I${PYTHON_SITELIBDIR}/numpy/core/include
-XCXXFLAGS+=	-I${PYTHON_SITELIBDIR}/numpy/core/include
-X.else
-XCMAKE_ARGS+=	-Denable-python=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MLUA}
-XCMAKE_ARGS+=	-Denable-lua=on
-XUSE_LUA=	5.0-5.1
-XWANT_LUA_VER=	5.1
-X.else
-XCMAKE_ARGS+=	-Denable-lua=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MOCTAVE}
-XCMAKE_ARGS+=	-Denable-octave=on
-XBROKEN=		Fails to build with Octave-3.8.0 support
-X.else
-XCMAKE_ARGS+=	-Denable-octave=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MMGL2}
-XCMAKE_ARGS+=	-Denable-mgl2=on
-XPLIST_SUB+=	NOMGL2="@comment "
-X.else
-XCMAKE_ARGS+=	-Denable-mgl2=off
-XPLIST_SUB+=	NOMGL2=""
-X.endif
-X
-X.if ${PORT_OPTIONS:MZLIB}
-XCMAKE_ARGS+=	-Denable-zlib=on
-X.else
-XCMAKE_ARGS+=	-Denable-zlib=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MFLTK}
-XCMAKE_ARGS+=	-Denable-fltk=on
-X.else
-XCMAKE_ARGS+=	-Denable-fltk=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MGLUT}
-XCMAKE_ARGS+=	-Denable-glut=on
-X.else
-XCMAKE_ARGS+=	-Denable-glut=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MGIF}
-XCMAKE_ARGS+=	-Denable-gif=on
-X.else
-XCMAKE_ARGS+=	-Denable-gif=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MHDF5}
-XCMAKE_ARGS+=	-Denable-hdf5=on
-X.else
-XCMAKE_ARGS+=	-Denable-hdf5=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MHDF4}
-XCMAKE_ARGS+=	-Denable-hdf4=on \
-X		-DHDF4_INCLUDE_DIR:STRING="${LOCALBASE}/include"
-X.else
-XCMAKE_ARGS+=	-Denable-hdf4=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MPDF}
-XCMAKE_ARGS+=	-Denable-pdf=on
-X.else
-XCMAKE_ARGS+=	-Denable-pdf=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MWX}
-XCMAKE_ARGS+=	-Denable-wx=on
-XUSE_WX=		2.5-2.8
-XWANT_WX_VER=	2.8
-XWX_CONF_ARGS=	absolute
-X.else
-XCMAKE_ARGS+=	-Denable-wx=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MLUA}
-XCMAKE_ARGS+=	-Denable-lua=on
-X.else
-XCMAKE_ARGS+=	-Denable-lua=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MJPEG}
-XCMAKE_ARGS+=	-Denable-jpeg=on
-X.else
-XCMAKE_ARGS+=	-Denable-jpeg=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MPNG}
-XCMAKE_ARGS+=	-Denable-png=on
-XPLIST_SUB+=	NOPNG="@comment "
-X.else
-XCMAKE_ARGS+=	-Denable-png=off
-XPLIST_SUB+=	NOPNG=""
-X.endif
-X
-X.if ${PORT_OPTIONS:MQT5}
-XCMAKE_ARGS+=	-Denable-qt5=on
-XUSE_QT5=	core widgets gui network webkit \
-X		qmake_build
-X.else
-XCMAKE_ARGS+=	-Denable-qt5=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MQT4}
-XCMAKE_ARGS+=	-Denable-qt4=on
-XUSE_QT4=	webkit gui svg svg xml \
-X		moc_build qmake_build rcc_build uic_build
-X.else
-XCMAKE_ARGS+=	-Denable-qt4=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MOPENMP}
-XCMAKE_ARGS+=	-Denable-openmp=on
-X.else
-XCMAKE_ARGS+=	-Denable-openmp=off
-X.endif
-X
-X.if ${PORT_OPTIONS:MPTHREAD}
-XPTHREAD_CMAKE_ON=	-Denable-pthread=on
-X.else
-XPTHREAD_CMAKE_OFF=	-Denable-pthread=off
-X.endif
-X
-Xpost-patch:
-X.if ${PORT_OPTIONS:MFLTK}
-X	@${REINPLACE_CMD} -e 's:<Fl:<FL:g' ${WRKSRC}/include/mgl2/fltk.h
-X.endif
-X.if ${PORT_OPTIONS:MINFO_DOC}
-X	@${REINPLACE_CMD} -e \
-X		's|@documentencoding UTF-8|@documentencoding ISO-8859-1|g' ${WRKSRC}/texinfo/mathgl_en.texi
-X	@${REINPLACE_CMD} -e \
-X		's|@documentencoding UTF-8|@documentencoding KOI8-R|g' ${WRKSRC}/texinfo/mathgl_ru.texi
-X	@${REINPLACE_CMD} -e \
-X		"s|@item @quoteright{}|@item '|g" ${WRKSRC}/texinfo/symbols_en.texi
-X	@${REINPLACE_CMD} -e \
-X		"s|@item @quoteright{}|@item '|g" ${WRKSRC}/texinfo/symbols_ru.texi
-X.endif
-X.if ${PORT_OPTIONS:MHDF4}
-X	@${REINPLACE_CMD} -e 's:<hdf/:<:g' ${WRKSRC}/src/data_io.cpp
-X.endif
-X
-Xpost-install:
-X.if ${PORT_OPTIONS:MINFO_DOC}
-X.for file in mgl.cgi.1 mglconv.1 mglview.1 udav.1
-X	${INSTALL_MAN} ${WRKSRC}/texinfo/${file} ${STAGEDIR}${PREFIX}/man/man1/
-X.endfor
-X	${INSTALL_MAN} ${WRKSRC}/texinfo/mgl.5 ${STAGEDIR}${PREFIX}/man/man5/
-X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info ${STAGEDIR}${PREFIX}/info
-X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-1 ${STAGEDIR}${PREFIX}/info
-X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-2 ${STAGEDIR}${PREFIX}/info
-X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-3 ${STAGEDIR}${PREFIX}/info
-X.endif
-X
-X.include <bsd.port.mk>
-bdbddfc35c0b97e70f1b6e15e0515835
-echo x - mathgl/distinfo
-sed 's/^X//' >mathgl/distinfo << '7ce0342a8013760d4dbd6a5a534f6be7'
-XSHA256 (mathgl-2.2.2.tar.gz) = d6cbf522c029df89a30809152e08c9a29f204fc55eceb14924002dbb3a53f5cb
-XSIZE (mathgl-2.2.2.tar.gz) = 5343271
-7ce0342a8013760d4dbd6a5a534f6be7
-echo x - mathgl/pkg-descr
-sed 's/^X//' >mathgl/pkg-descr << '7e210536c8621b57825092d288e23a67'
-XMathGL is ...
-X* a library for making high-quality scientific graphs under Linux & Windows
-X* a library for the fast data plotting and data processing  of large data
-X  arrays
-X* a library for working in window and console modes and for easy embedding
-X  into other programs;
-X* a library with large and growing set of graphics
-X
-XNow MathGL supports more than 55 general types of graphics for 1d, 2d and 3d
-Xdata arrays, including special ones for chemical and statistical graphics.
-XSupports raster and vector (EPS, SVG) graphics. Supports several interfaces
-X(Qt, FLTK ...) and can even be used from console programs. It has  cript MGL
-Xlanguage for simplification of data plotting. Also it has several types of
-Xtransparency and smoothed lightning, vector fonts and TeX-like symbol parsing,
-Xarbitrary curvilinear coordinate system and many over useful things. It can be
-Xused from code written on C++/C,Fortran,Python and many other languages.
-XFinally it is platform independent and free (under GPL v.2.0 license). If you
-Xdon't like the idea of GPL v.2.0 you can only build the LGPL part of the
-Xlibrary (but you lose the SWIG interfaces, like for Python or Octave).
-X
-XWWW: http://mathgl.sourceforge.net/doc_en/Main.html
-7e210536c8621b57825092d288e23a67
 echo x - mathgl/pkg-plist
 sed 's/^X//' >mathgl/pkg-plist << '75dfa71f3c885625cf7749a0a5d45634'
 X%%NOLGPL%%bin/mglconv
@@ -717,21 +357,21 @@ X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/type2.bmp
 X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/vect.bmp
 X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/vecta.bmp
 X%%HTML_DOC%%%%NOPNG%%%%PORTDOCS%%%%DOCSDIR%%/png/venn.bmp
-X%%PORTDOCS%%%%DOCSDIR%%/qt.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_arg.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_calc.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_cmd.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_data.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_gen_set.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_help.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_light.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_main.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_opt.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_pen.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_prop.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_sch.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_txt.png
-X%%PORTDOCS%%%%DOCSDIR%%/udav/udav_var.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/qt.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_arg.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_calc.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_cmd.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_data.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_gen_set.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_help.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_light.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_main.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_opt.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_pen.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_prop.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_sch.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_txt.png
+X%%HTML_DOC%%%%PORTDOCS%%%%DOCSDIR%%/udav/udav_var.png
 X%%DATADIR%%/fonts/STIX.vfm
 X%%DATADIR%%/fonts/STIX_b.vfm
 X%%DATADIR%%/fonts/STIX_bi.vfm
@@ -754,9 +394,378 @@ X@dirrmtry lib
 X@dirrmtry bin
 X%%HTML_DOC%%%%PORTDOCS%%@dirrmtry %%DOCSDIR%%/udav
 X%%HTML_DOC%%%%PORTDOCS%%@dirrmtry %%DOCSDIR%%/png
-X%%PORTDOCS%%@dirrm %%DOCSDIR%%
+X%%HTML_DOC%%%%PORTDOCS%%@dirrm %%DOCSDIR%%
 X%%NOLGPL%%%%PYTHON%%@dirrmtry %%PYTHON_SITELIBDIR%%
 X%%NOLGPL%%%%PYTHON%%@dirrmtry %%PYTHON_LIBDIR%%
 75dfa71f3c885625cf7749a0a5d45634
+echo x - mathgl/pkg-descr
+sed 's/^X//' >mathgl/pkg-descr << '7e210536c8621b57825092d288e23a67'
+XMathGL is ...
+X* a library for making high-quality scientific graphs under Linux & Windows
+X* a library for the fast data plotting and data processing  of large data
+X  arrays
+X* a library for working in window and console modes and for easy embedding
+X  into other programs;
+X* a library with large and growing set of graphics
+X
+XNow MathGL supports more than 55 general types of graphics for 1d, 2d and 3d
+Xdata arrays, including special ones for chemical and statistical graphics.
+XSupports raster and vector (EPS, SVG) graphics. Supports several interfaces
+X(Qt, FLTK ...) and can even be used from console programs. It has  cript MGL
+Xlanguage for simplification of data plotting. Also it has several types of
+Xtransparency and smoothed lightning, vector fonts and TeX-like symbol parsing,
+Xarbitrary curvilinear coordinate system and many over useful things. It can be
+Xused from code written on C++/C,Fortran,Python and many other languages.
+XFinally it is platform independent and free (under GPL v.2.0 license). If you
+Xdon't like the idea of GPL v.2.0 you can only build the LGPL part of the
+Xlibrary (but you lose the SWIG interfaces, like for Python or Octave).
+X
+XWWW: http://mathgl.sourceforge.net/doc_en/Main.html
+7e210536c8621b57825092d288e23a67
+echo x - mathgl/distinfo
+sed 's/^X//' >mathgl/distinfo << '7ce0342a8013760d4dbd6a5a534f6be7'
+XSHA256 (mathgl-2.2.2.tar.gz) = d6cbf522c029df89a30809152e08c9a29f204fc55eceb14924002dbb3a53f5cb
+XSIZE (mathgl-2.2.2.tar.gz) = 5343271
+7ce0342a8013760d4dbd6a5a534f6be7
+echo x - mathgl/Makefile
+sed 's/^X//' >mathgl/Makefile << 'bdbddfc35c0b97e70f1b6e15e0515835'
+X# $FreeBSD$
+X
+XPORTNAME=	mathgl
+XPORTVERSION=	2.2.2
+XCATEGORIES=	math science
+XMASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/${PORTNAME}%20${PORTVERSION}
+X
+XMAINTAINER=	jozze.zepl@gmail.com
+XCOMMENT=	Scientific graph plotting library
+X
+XLICENSE=	GPLv2 LGPL21
+XLICENSE_COMB=	dual
+X
+XUSES=		cmake
+X#USE_GCC?=	4.7+
+XUSE_LDCONFIG=	yes
+X
+X# List of build options 
+XOPTIONS_DEFINE=	DOUBLE SIMPLE MPI OPENGL LGPL GSL PYTHON LUA OCTAVE MGL2
+X
+XOPTIONS_RADIO=	THREADS QT
+XOPTIONS_RADIO_THREADS=	PTHREAD OPENMP
+XOPTIONS_RADIO_QT=	QT5 QT4
+X
+XOPTIONS_MULTI=	GRAPHICS
+XOPTIONS_MULTI_GRAPHICS=	ZLIB FLTK GLUT GIF HDF5 HDF4 PDF WX JPEG PNG
+X
+XOPTIONS_GROUP=	DOCS
+XOPTIONS_GROUP_DOCS=	PDF_DOC HTML_DOC INFO_DOC PRC JSON
+X
+XOPTIONS_SUB=	yes
+X
+X# Dependencies (WX amd QT* are amongst the conditionals below)
+XLUA_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20
+XPYTHON_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20 ${PYNUMPY}
+XPYTHON_RUN_DEPENDS=	${PYNUMPY}
+XOCTAVE_BUILD_DEPENDS=	swig2.0:${PORTSDIR}/devel/swig20 \
+X			octave:${PORTSDIR}/math/octave
+XOCTAVE_RUN_DEPENDS=	octave:${PORTSDIR}/math/octave
+XGSL_LIB_DEPENDS=	libgslcblas.so:${PORTSDIR}/math/gsl \
+X			libgsl.so:${PORTSDIR}/math/gsl
+XOPENGL_LIB_DEPENDS=	libGL.so:${PORTSDIR}/graphics/libGL
+XFLTK_LIB_DEPENDS=	libfltk.so:${PORTSDIR}/x11-toolkits/fltk
+XMPI_LIB_DEPENDS=	libmpi.so:${PORTSDIR}/net/openmpi
+XGLUT_LIB_DEPENDS=	libglut.so:${PORTSDIR}/graphics/freeglut
+XGIF_LIB_DEPENDS=	libgif.so:${PORTSDIR}/graphics/giflib
+XPDF_LIB_DEPENDS=	libhpdf.so:${PORTSDIR}/print/libharu
+XJPEG_LIB_DEPENDS=	libjpeg.so:${PORTSDIR}/graphics/jpeg
+XPNG_LIB_DEPENDS=	libpng15.so:${PORTSDIR}/graphics/png
+XINFO_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
+XJSON_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
+XHTML_BUILD_DEPENDS=	texi2any:${PORTSDIR}/print/texinfo
+XHDF4_LIB_DEPENDS=	libdf.so:${PORTSDIR}/science/hdf
+XHDF5_LIB_DEPENDS=	libhdf5.so:${PORTSDIR}/science/hdf5-18
+X
+X# Option descriptions
+XDOUBLE_DESC=	Use 'double' precision in MathGL library
+XSIMPLE_DESC=	Increase drawing speed but disable maglDataA class
+XMPI_DESC=	Enable MPI
+XOPENGL_DESC=	Enable OpenGL support
+XLGPL_DESC=	Enable only LGPL part of MathGL
+XGSL_DESC=	Enable support with GSL
+XPYTHON_DESC=	Enable Python language interface
+XLUA_DESC=	Enable Lua language interface
+XOCTAVE_DESC=	Enable Octave interface
+XMGL2_DESC=	Use names 'libmgl2-*' instead of 'libmgl-*'
+XPTHREAD_DESC=	Enable POSIX threads
+XOPENMP_DESC=	Enable OpenMP threads
+XGRAPHICS_DESC=	Image support
+XFLTK_DESC=	Enable fltk widget
+XGLUT_DESC=	GLUT support (demands OpenGL option)
+XQT_DESC=	Qt library support
+XQT5_DESC=	Qt 5 widget support
+XQT4_DESC=	Qt 4 widget support
+XHDF4_DESC=	HDF-4 format support
+XWX_DESC=	Enable wxWidget widget library
+XPNG_DESC=	PNG image format support (requires the ZLIB option)
+XPDF_DESC=	Enable .pdf format support (requires the PNG option)
+XDOCS_DESC=	Documentation
+XPDF_DOC_DESC=	Build English .pdf documentation (requires the PDF option)
+XHTML_DOC_DESC=	Enable HTML documentation (English and Russian)
+XINFO_DOC_DESC=	Enable INFO documentation
+XPRC_DESC=	Enable PDF samples for HTML docs (requires the PDF option)
+XJSON_DESC=	Enable JSON samples for HTML docs
+X
+XOPTIONS_DEFAULT=OPENMP DOUBLE OPENGL PDF ZLIB PNG
+X
+X.include <bsd.port.options.mk>
+X
+X.if ${PORT_OPTIONS:MDOUBLE}
+XCMAKE_ARGS+=	-Denable-double=on
+X.else
+XCMAKE_ARGS+=	-Denable-double=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MSIMPLE}
+XCMAKE_ARGS+=	-Denable-simple=on
+XBROKEN=		Does not compile with this option
+X.else
+XCMAKE_ARGS+=	-Denable-simple=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MMPI}
+XCMAKE_ARGS+=	-Denable-mpi=on \
+X		-DMPI_C_LIBRARIES:STRING="${LOCALBASE}/mpi/openmpi/lib" \
+X		-DMPI_CXX_LIBRARIES:STRING="${LOCALBASE}/mpi/openmpi/lib" \
+X		-DMPI_C_INCLUDE_PATH:STRING="${LOCALBASE}/mpi/openmpi/include" \
+X		-DMPI_CXX_INCLUDE_PATH:STRING="${LOCALBASE}/mpi/openmpi/include"
+XCXXFLAGS+=	-I${LOCALBASE}/mpi/openmpi/include
+XCFLAGS+=	-I${LOCALBASE}/mpi/openmpi/include
+X.else
+XCMAKE_ARGS+=	-Denable-mpi=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MOPENGL}
+XCMAKE_ARGS+=	-Denable-opengl=on
+X.else
+XCMAKE_ARGS+=	-Denable-opengl=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPDF_DOC}
+XCMAKE_ARGS+=	-Denable-doc-pdf-en=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-pdf-en=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MHTML_DOC}
+XCMAKE_ARGS+=	-Denable-doc-html=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-html=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MINFO_DOC}
+XCMAKE_ARGS+=	-Denable-doc-info=on
+XINFO=		mathgl_en
+X.else
+XCMAKE_ARGS+=	-Denable-doc-info=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MJSON}
+XCMAKE_ARGS+=	-Denable-doc-json=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-json=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPRC}
+XCMAKE_ARGS+=	-Denable-doc-prc=on
+X.else
+XCMAKE_ARGS+=	-Denable-doc-prc=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MLGPL}
+XCMAKE_ARGS+=	-Denable-lgpl=on
+XPLIST_SUB+=	NOLGPL="@comment "
+X.else
+XCMAKE_ARGS+=	-Denable-lgpl=off
+XPLIST_SUB+=	NOLGPL=""
+X.endif
+X
+X.if ${PORT_OPTIONS:MGSL}
+XCMAKE_ARGS+=	-Denable-gsl=on \
+X		-I${LOCALBASE}/include \
+X		-L${LOCALBASE}/lib
+X.else
+XCMAKE_ARGS+=	-Denable-gsl=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPYTHON}
+XCMAKE_ARGS+=	-Denable-python=on
+XUSE_PYTHON=	yes
+XCFLAGS+=	-I${PYTHON_SITELIBDIR}/numpy/core/include
+XCXXFLAGS+=	-I${PYTHON_SITELIBDIR}/numpy/core/include
+X.else
+XCMAKE_ARGS+=	-Denable-python=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MLUA}
+XCMAKE_ARGS+=	-Denable-lua=on
+XUSE_LUA=	5.0-5.1
+XWANT_LUA_VER=	5.1
+X.else
+XCMAKE_ARGS+=	-Denable-lua=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MOCTAVE}
+XCMAKE_ARGS+=	-Denable-octave=on
+XBROKEN=		Fails to build with Octave-3.8.0 support
+X.else
+XCMAKE_ARGS+=	-Denable-octave=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MMGL2}
+XCMAKE_ARGS+=	-Denable-mgl2=on
+XPLIST_SUB+=	NOMGL2="@comment "
+X.else
+XCMAKE_ARGS+=	-Denable-mgl2=off
+XPLIST_SUB+=	NOMGL2=""
+X.endif
+X
+X.if ${PORT_OPTIONS:MZLIB}
+XCMAKE_ARGS+=	-Denable-zlib=on
+X.else
+XCMAKE_ARGS+=	-Denable-zlib=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MFLTK}
+XCMAKE_ARGS+=	-Denable-fltk=on
+X.else
+XCMAKE_ARGS+=	-Denable-fltk=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MGLUT}
+XCMAKE_ARGS+=	-Denable-glut=on
+X.else
+XCMAKE_ARGS+=	-Denable-glut=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MGIF}
+XCMAKE_ARGS+=	-Denable-gif=on
+X.else
+XCMAKE_ARGS+=	-Denable-gif=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MHDF5}
+XCMAKE_ARGS+=	-Denable-hdf5=on
+X.else
+XCMAKE_ARGS+=	-Denable-hdf5=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MHDF4}
+XCMAKE_ARGS+=	-Denable-hdf4=on \
+X		-DHDF4_INCLUDE_DIR:STRING="${LOCALBASE}/include"
+X.else
+XCMAKE_ARGS+=	-Denable-hdf4=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPDF}
+XCMAKE_ARGS+=	-Denable-pdf=on
+X.else
+XCMAKE_ARGS+=	-Denable-pdf=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MWX}
+XCMAKE_ARGS+=	-Denable-wx=on
+XUSE_WX=		2.5-2.8
+XWANT_WX_VER=	2.8
+XWX_CONF_ARGS=	absolute
+X.else
+XCMAKE_ARGS+=	-Denable-wx=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MLUA}
+XCMAKE_ARGS+=	-Denable-lua=on
+X.else
+XCMAKE_ARGS+=	-Denable-lua=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MJPEG}
+XCMAKE_ARGS+=	-Denable-jpeg=on
+X.else
+XCMAKE_ARGS+=	-Denable-jpeg=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPNG}
+XCMAKE_ARGS+=	-Denable-png=on
+XPLIST_SUB+=	NOPNG="@comment "
+X.else
+XCMAKE_ARGS+=	-Denable-png=off
+XPLIST_SUB+=	NOPNG=""
+X.endif
+X
+X.if ${PORT_OPTIONS:MQT5}
+XCMAKE_ARGS+=	-Denable-qt5=on
+XUSE_QT5=	core widgets gui network webkit \
+X		qmake_build buildtools_build
+X.else
+XCMAKE_ARGS+=	-Denable-qt5=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MQT4}
+XCMAKE_ARGS+=	-Denable-qt4=on
+XUSE_QT4=	webkit gui svg svg xml \
+X		moc_build qmake_build rcc_build uic_build
+X.else
+XCMAKE_ARGS+=	-Denable-qt4=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MOPENMP}
+XCMAKE_ARGS+=	-Denable-openmp=on
+X.else
+XCMAKE_ARGS+=	-Denable-openmp=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MPTHREAD}
+XPTHREAD_CMAKE_ON=	-Denable-pthread=on
+X.else
+XPTHREAD_CMAKE_OFF=	-Denable-pthread=off
+X.endif
+X
+X.if ${PORT_OPTIONS:MGSL} || \
+X	${PORT_OPTIONS:MOPENMP}
+XUSE_GCC=	4.7+
+X.endif
+X
+Xpost-patch:
+X.if ${PORT_OPTIONS:MFLTK}
+X	@${REINPLACE_CMD} -e 's:<Fl:<FL:g' ${WRKSRC}/include/mgl2/fltk.h
+X.endif
+X.if ${PORT_OPTIONS:MINFO_DOC}
+X	@${REINPLACE_CMD} -e \
+X		's|@documentencoding UTF-8|@documentencoding ISO-8859-1|g' ${WRKSRC}/texinfo/mathgl_en.texi
+X	@${REINPLACE_CMD} -e \
+X		's|@documentencoding UTF-8|@documentencoding KOI8-R|g' ${WRKSRC}/texinfo/mathgl_ru.texi
+X	@${REINPLACE_CMD} -e \
+X		"s|@item @quoteright{}|@item '|g" ${WRKSRC}/texinfo/symbols_en.texi
+X	@${REINPLACE_CMD} -e \
+X		"s|@item @quoteright{}|@item '|g" ${WRKSRC}/texinfo/symbols_ru.texi
+X.endif
+X.if ${PORT_OPTIONS:MHDF4}
+X	@${REINPLACE_CMD} -e 's:<hdf/:<:g' ${WRKSRC}/src/data_io.cpp
+X.endif
+X
+Xpost-install:
+X.if ${PORT_OPTIONS:MHTML_DOC}
+X.for file in mgl.cgi.1 mglconv.1 mglview.1 udav.1
+X	${INSTALL_MAN} ${WRKSRC}/texinfo/${file} ${STAGEDIR}${PREFIX}/man/man1/
+X.endfor
+X.endif
+X.if ${PORT_OPTIONS:MINFO_DOC}
+X	${INSTALL_MAN} ${WRKSRC}/texinfo/mgl.5 ${STAGEDIR}${PREFIX}/man/man5/
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info ${STAGEDIR}${PREFIX}/info
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-1 ${STAGEDIR}${PREFIX}/info
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-2 ${STAGEDIR}${PREFIX}/info
+X	${INSTALL_DATA} ${WRKSRC}/texinfo/mathgl_en.info-3 ${STAGEDIR}${PREFIX}/info
+X.endif
+X
+X.include <bsd.port.mk>
+bdbddfc35c0b97e70f1b6e15e0515835
 exit
 
